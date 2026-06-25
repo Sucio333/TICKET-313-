@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -541,6 +541,92 @@ def panel_productor():
                          ingresos_totales=ingresos_totales,
                          cantidad_tickets_total=cantidad_tickets_total,
                          historial_tickets=historial_tickets)
+
+# Ruta para validar entradas por QR (solo para productores)
+@app.route('/validar-qr', methods=['GET', 'POST'])
+def validar_qr():
+    """Página para validar entradas escaneando códigos QR (solo para productores)."""
+
+    # Verificar si el usuario está autenticado
+    if 'usuario_id' not in session:
+        # Redirigir al login si no está autenticado
+        return redirect(url_for('login'))
+
+    # Verificar si el usuario tiene rol de productor
+    if session.get('usuario_rol') != 'productor':
+        # Mostrar página de acceso denegado si no es productor
+        return render_template('acceso_denegado.html')
+
+    # Si es GET, mostrar la página de validación de QR
+    if request.method == 'GET':
+        return render_template('validar_qr.html')
+
+    # Si es POST, procesar el QR escaneado
+    if request.method == 'POST':
+        # Obtener el ID del ticket del QR
+        ticket_id = request.form.get('ticket_id')
+
+        # Obtener conexión a la base de datos
+        conexion = obtener_conexion()
+
+        # Crear cursor para ejecutar comandos SQL
+        cursor = conexion.cursor()
+
+        # Buscar el ticket por ID
+        cursor.execute('''
+            SELECT id, usado, nombre_comprador, evento_id
+            FROM tickets
+            WHERE id = ?
+        ''', (ticket_id,))
+
+        # Obtener datos del ticket
+        ticket = cursor.fetchone()
+
+        # Si el ticket no existe
+        if not ticket:
+            # Cerrar conexión
+            conexion.close()
+            # Retornar error en JSON con código 400
+            return jsonify({'estado': 'error', 'mensaje': 'Entrada no válida'}), 400
+
+        # Si el ticket ya fue usado
+        if ticket[1] == 1:
+            # Cerrar conexión
+            conexion.close()
+            # Retornar estado de ya usado con código 200
+            return jsonify({'estado': 'usado', 'mensaje': f'Esta entrada ya fue usada por {ticket[2]}'}), 200
+
+        # Marcar el ticket como usado
+        cursor.execute('''
+            UPDATE tickets
+            SET usado = 1
+            WHERE id = ?
+        ''', (ticket_id,))
+
+        # Confirmar los cambios
+        conexion.commit()
+
+        # Obtener información del evento para mostrar
+        cursor.execute('''
+            SELECT nombre
+            FROM eventos
+            WHERE id = ?
+        ''', (ticket[3],))
+
+        # Obtener nombre del evento
+        evento = cursor.fetchone()
+        evento_nombre = evento[0] if evento else 'Evento desconocido'
+
+        # Cerrar la conexión
+        conexion.close()
+
+        # Retornar respuesta exitosa con código 200
+        return jsonify({
+            'estado': 'valido',
+            'mensaje': f'Entrada validada para {ticket[2]} - {evento_nombre}',
+            'comprador': ticket[2],
+            'evento': evento_nombre
+        }), 200
 
 # Ejecutar la aplicación si se corre este archivo directamente
 if __name__ == '__main__':

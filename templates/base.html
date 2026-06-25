@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ticket 313{% endblock %}</title>
+
+    <!-- Estilos CSS globales -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Navegación principal */
+        nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
+            padding: 8px 15px;
+        }
+
+        nav a:hover {
+            opacity: 0.8;
+        }
+
+        /* Contenedor principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Bloques de contenido */
+        .content-block {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+
+    <!-- Bloque de estilos adicionales de la página específica -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navegación principal -->
+    <nav>
+        <ul>
+            <li><a href="/">Inicio</a></li>
+            <li><a href="/eventos">Eventos</a></li>
+            {% if session.get('usuario_id') %}
+                {% if session.get('usuario_rol') == 'productor' %}
+                    <li><a href="/crear-evento">Crear Evento</a></li>
+                    <li><a href="/panel-productor">Panel Productor</a></li>
+                    <li><a href="/validar-qr">Validar QR</a></li>
+                {% elif session.get('usuario_rol') == 'asistente' %}
+                    <li><a href="/mis-tickets">Mis Entradas</a></li>
+                {% endif %}
+                <li><a href="/logout">Cerrar Sesión</a></li>
+            {% else %}
+                <li><a href="/login">Iniciar Sesión</a></li>
+                <li><a href="/registro">Registrarse</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Contenido principal de la página -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Pie de página -->
+    <footer style="background: rgba(0, 0, 0, 0.2); color: white; text-align: center; padding: 20px; margin-top: 40px;">
+        <p>Ticket 313 - Venta y Gestión de Entradas a Eventos</p>
+        <p style="font-size: 0.9em; margin-top: 10px;">Hecho con ❤️ usando Flask y SQLite</p>
+    </footer>
+
+    <!-- Script global de JavaScript -->
+    <script>
+        // Función para verificar si el usuario está autenticado
+        function verificarAutenticacion() {
+            // Obtener información de sesión desde la plantilla Jinja2
+            return {{ 'true' if session.get('usuario_id') else 'false' }};
+        }
+    </script>
+
+    <!-- Bloque de scripts adicionales de la página específica -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

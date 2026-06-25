@@ -133,6 +133,23 @@ def inicializar_db():
             # Mostrar error si algo falla
             print(f"Error al agregar columna 'usuario_id': {e}")
 
+    # Si la columna 'usado' no existe en tickets, agregarla
+    if 'usado' not in nombres_columnas_tickets:
+        print("⚠️  Agregando columna 'usado' a tabla tickets...")
+        try:
+            # Usar ALTER TABLE para agregar la columna de estado
+            # El valor por defecto será 0 (no usado) para registros existentes
+            cursor.execute('''
+                ALTER TABLE tickets
+                ADD COLUMN usado INTEGER DEFAULT 0
+            ''')
+            # Confirmar la alteración
+            conexion.commit()
+            print("✓ Columna 'usado' agregada exitosamente")
+        except Exception as e:
+            # Mostrar error si algo falla
+            print(f"Error al agregar columna 'usado': {e}")
+
     # Confirmar los cambios en la base de datos
     conexion.commit()
 
