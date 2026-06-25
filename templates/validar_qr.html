@@ -1,674 +1,839 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ticket 313">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Validar Entradas - Ticket 313</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
 
-{% block title %}Validar Entradas - Ticket 313{% endblock %}
-
-{% block content %}
-<div class="container validar-qr-container">
-    <!-- Encabezado de la página -->
-    <h1>Validar Entradas por QR</h1>
-    <p class="descripcion">Utiliza la cámara de tu dispositivo para escanear los códigos QR de las entradas</p>
-
-    <!-- Contenedor principal de validación -->
-    <div class="qr-validador">
-        <!-- Sección de cámara y escaneo -->
-        <div class="camara-seccion">
-            <!-- Canvas para capturar video de la cámara -->
-            <video id="video" class="video-stream" playsinline></video>
-
-            <!-- Overlay visual para indicar zona de escaneo -->
-            <div class="qr-overlay">
-                <div class="qr-square"></div>
-                <p class="instruccion">Alinea el código QR dentro del cuadrado</p>
-            </div>
-
-            <!-- Botones de control -->
-            <div class="botones-control">
-                <!-- Botón para iniciar/detener escaneo -->
-                <button id="btn-iniciar" class="btn btn-primary" onclick="iniciarEscaneo()">
-                    Iniciar Cámara
-                </button>
-                <!-- Botón para detener escaneo -->
-                <button id="btn-detener" class="btn btn-danger" onclick="detenerEscaneo()" style="display: none;">
-                    Detener Cámara
-                </button>
-            </div>
-        </div>
-
-        <!-- Sección de resultados -->
-        <div class="resultados-seccion">
-            <!-- Contenedor para mostrar mensajes de resultado -->
-            <div id="resultado" class="resultado-mensaje" style="display: none;"></div>
-
-            <!-- Información de la última validación exitosa -->
-            <div id="info-ticket" class="info-ticket" style="display: none;">
-                <div class="ticket-datos">
-                    <p>
-                        <strong>Comprador:</strong>
-                        <span id="comprador-nombre"></span>
-                    </p>
-                    <p>
-                        <strong>Evento:</strong>
-                        <span id="evento-nombre"></span>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Historial de validaciones en la sesión actual -->
-            <div class="historial-validaciones">
-                <h3>Historial de Validaciones</h3>
-                <ul id="lista-validaciones" class="lista-validaciones">
-                    <!-- Se agregarán validaciones dinámicamente aquí -->
-                </ul>
-                <p id="sin-validaciones" class="sin-validaciones">Aún no hay validaciones en esta sesión</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Importar librería jsQR para escanear códigos QR desde navegador -->
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-
-<script>
-    // Variables globales para controlar el escaneo
-    let videoElement = null;           // Elemento de video para capturar cámara
-    let canvasElement = null;          // Canvas para procesar frames de video
-    let animationFrameId = null;       // ID de la animación para detenerla
-    let cameraActiva = false;          // Estado de la cámara
-    let ultimoQrEscaneado = null;      // Último QR escaneado para evitar duplicados
-    let validacionesActuales = [];     // Lista de validaciones en la sesión actual
-
-    // Inicializar elementos al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-        // Obtener referencias a los elementos del DOM
-        videoElement = document.getElementById('video');
-        canvasElement = document.createElement('canvas'); // Canvas invisible para procesamiento
-    });
-
-    // Función para iniciar el escaneo con la cámara
-    function iniciarEscaneo() {
-        // Verificar si el navegador soporta acceso a cámara
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            // Mostrar error si no se puede acceder a la cámara
-            mostrarError('Tu navegador no soporta acceso a cámara');
-            return;
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        // Solicitar acceso a la cámara del dispositivo
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-            .then(function(stream) {
-                // Si se obtiene permiso, asignar el stream de video al elemento video
-                videoElement.srcObject = stream;
-
-                // Esperar a que el video esté listo para reproducirse
-                videoElement.onloadedmetadata = function() {
-                    // Iniciar reproducción de video
-                    videoElement.play();
-
-                    // Cambiar visibilidad de botones
-                    document.getElementById('btn-iniciar').style.display = 'none';
-                    document.getElementById('btn-detener').style.display = 'block';
-
-                    // Marcar cámara como activa
-                    cameraActiva = true;
-
-                    // Iniciar el bucle de escaneo
-                    escanearQR();
-                };
-            })
-            .catch(function(error) {
-                // Mostrar error si no se puede acceder a cámara
-                console.error('Error al acceder a cámara:', error);
-                mostrarError('No se pudo acceder a la cámara. Verifica los permisos.');
-            });
-    }
-
-    // Función para detener el escaneo
-    function detenerEscaneo() {
-        // Detener la reproducción de video
-        if (videoElement.srcObject) {
-            // Detener todos los tracks del stream
-            videoElement.srcObject.getTracks().forEach(track => track.stop());
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+            overflow-x: hidden;
         }
 
-        // Cancelar el bucle de animación
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
+        /* Navbar oscuro con logo a la izquierda */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
         }
 
-        // Cambiar visibilidad de botones
-        document.getElementById('btn-iniciar').style.display = 'block';
-        document.getElementById('btn-detener').style.display = 'none';
-
-        // Marcar cámara como inactiva
-        cameraActiva = false;
-    }
-
-    // Función para escanear QR continuamente desde el video
-    function escanearQR() {
-        // Verificar si la cámara está activa
-        if (!cameraActiva) {
-            return;
+        /* Logo "Ticket 313" a la izquierda */
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            font-family: 'Sora', sans-serif;
         }
 
-        // Obtener el contexto 2D del canvas
-        const canvasContext = canvasElement.getContext('2d');
-
-        // Establecer dimensiones del canvas igual al video
-        canvasElement.width = videoElement.videoWidth;
-        canvasElement.height = videoElement.videoHeight;
-
-        // Dibujar frame actual del video en el canvas
-        canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-
-        // Obtener datos de imagen del canvas
-        const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
-
-        // Usar jsQR para detectar códigos QR en la imagen
-        const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
-
-        // Si se detectó un código QR
-        if (qrCode) {
-            // Extraer datos del QR (debería ser el ID del ticket)
-            const datosQR = qrCode.data;
-
-            // Verificar si es un QR diferente al último escaneado (evitar duplicados)
-            if (datosQR !== ultimoQrEscaneado) {
-                // Actualizar último QR escaneado
-                ultimoQrEscaneado = datosQR;
-
-                // Procesar el QR escaneado
-                procesarQR(datosQR);
-            }
-        }
-
-        // Continuar escaneando en el siguiente frame
-        animationFrameId = requestAnimationFrame(escanearQR);
-    }
-
-    // Función para procesar el código QR escaneado
-    function procesarQR(datosQR) {
-        // Extraer el ID del ticket del contenido del QR
-        // El formato del QR es: TICKET_ID:123|EVENTO:nombre|EMAIL:email|FECHA:2025-01-01
-        const matchTicketId = datosQR.match(/TICKET_ID:(\d+)/);
-
-        if (!matchTicketId) {
-            // Si no cumple el formato esperado, mostrar error
-            mostrarError('Código QR no válido para Ticket 313');
-            return;
-        }
-
-        // Obtener el ID del ticket
-        const ticketId = matchTicketId[1];
-
-        // Enviar el ID del ticket al servidor para validación
-        validarTicketEnServidor(ticketId);
-    }
-
-    // Función para validar el ticket en el servidor
-    function validarTicketEnServidor(ticketId) {
-        // Crear formulario para enviar datos
-        const formData = new FormData();
-        formData.append('ticket_id', ticketId);
-
-        // Enviar solicitud POST al servidor
-        fetch('/validar-qr', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Procesar respuesta del servidor
-            if (data.estado === 'valido') {
-                // Entrada válida y aceptada
-                mostrarExito(data.mensaje, data.comprador, data.evento);
-
-                // Agregar a historial
-                agregarAlHistorial(ticketId, 'valido', data.comprador, data.evento);
-            } else if (data.estado === 'usado') {
-                // Entrada ya fue utilizada
-                mostrarYaUsado(data.mensaje);
-
-                // Agregar a historial
-                agregarAlHistorial(ticketId, 'usado', 'Desconocido', 'Desconocido');
-            } else {
-                // Error: entrada no válida
-                mostrarError(data.mensaje);
-
-                // Agregar a historial
-                agregarAlHistorial(ticketId, 'error', 'Desconocido', 'Desconocido');
-            }
-        })
-        .catch(error => {
-            // Error de conexión con servidor
-            console.error('Error:', error);
-            mostrarError('Error de conexión con el servidor');
-        });
-    }
-
-    // Función para mostrar mensaje de éxito (verde)
-    function mostrarExito(mensaje, comprador, evento) {
-        // Obtener elemento de resultado
-        const resultadoDiv = document.getElementById('resultado');
-
-        // Crear mensaje de éxito con estilo verde
-        resultadoDiv.innerHTML = `<div class="alert alert-success">${mensaje}</div>`;
-        resultadoDiv.style.display = 'block';
-
-        // Mostrar información del ticket validado
-        document.getElementById('comprador-nombre').textContent = comprador;
-        document.getElementById('evento-nombre').textContent = evento;
-        document.getElementById('info-ticket').style.display = 'block';
-
-        // Ocultar mensaje después de 5 segundos
-        setTimeout(() => {
-            resultadoDiv.style.display = 'none';
-            document.getElementById('info-ticket').style.display = 'none';
-            ultimoQrEscaneado = null; // Permitir escanear el mismo QR de nuevo
-        }, 5000);
-    }
-
-    // Función para mostrar mensaje de entrada ya usada (rojo)
-    function mostrarYaUsado(mensaje) {
-        // Obtener elemento de resultado
-        const resultadoDiv = document.getElementById('resultado');
-
-        // Crear mensaje de error con estilo rojo
-        resultadoDiv.innerHTML = `<div class="alert alert-danger">${mensaje}</div>`;
-        resultadoDiv.style.display = 'block';
-
-        // Ocultar mensaje después de 5 segundos
-        setTimeout(() => {
-            resultadoDiv.style.display = 'none';
-            ultimoQrEscaneado = null; // Permitir escanear de nuevo
-        }, 5000);
-    }
-
-    // Función para mostrar mensaje de error general (rojo)
-    function mostrarError(mensaje) {
-        // Obtener elemento de resultado
-        const resultadoDiv = document.getElementById('resultado');
-
-        // Crear mensaje de error con estilo rojo
-        resultadoDiv.innerHTML = `<div class="alert alert-danger">${mensaje}</div>`;
-        resultadoDiv.style.display = 'block';
-
-        // Ocultar mensaje después de 5 segundos
-        setTimeout(() => {
-            resultadoDiv.style.display = 'none';
-            ultimoQrEscaneado = null; // Permitir reintentar
-        }, 5000);
-    }
-
-    // Función para agregar validación al historial
-    function agregarAlHistorial(ticketId, estado, comprador, evento) {
-        // Crear objeto de validación
-        const validacion = {
-            ticketId: ticketId,
-            estado: estado,
-            comprador: comprador,
-            evento: evento,
-            fecha: new Date().toLocaleTimeString()
-        };
-
-        // Agregar a array de validaciones
-        validacionesActuales.push(validacion);
-
-        // Obtener elemento de lista
-        const listaValidaciones = document.getElementById('lista-validaciones');
-        const sinValidaciones = document.getElementById('sin-validaciones');
-
-        // Ocultar mensaje de "sin validaciones"
-        sinValidaciones.style.display = 'none';
-
-        // Crear elemento de lista para la validación
-        const itemLista = document.createElement('li');
-
-        // Establecer clase CSS según estado
-        if (estado === 'valido') {
-            itemLista.className = 'item-validacion item-exito';
-            itemLista.innerHTML = `
-                <span class="ticket-id">#${ticketId}</span>
-                <span class="comprador">${comprador}</span>
-                <span class="hora">${validacion.fecha}</span>
-                <span class="estado-badge badge-exito">Validado</span>
-            `;
-        } else if (estado === 'usado') {
-            itemLista.className = 'item-validacion item-usado';
-            itemLista.innerHTML = `
-                <span class="ticket-id">#${ticketId}</span>
-                <span class="comprador">Ya usado</span>
-                <span class="hora">${validacion.fecha}</span>
-                <span class="estado-badge badge-usado">Ya Usado</span>
-            `;
-        } else {
-            itemLista.className = 'item-validacion item-error';
-            itemLista.innerHTML = `
-                <span class="ticket-id">#${ticketId}</span>
-                <span class="comprador">No válido</span>
-                <span class="hora">${validacion.fecha}</span>
-                <span class="estado-badge badge-error">Error</span>
-            `;
-        }
-
-        // Insertar en la lista (al inicio para mostrar más recientes primero)
-        listaValidaciones.insertBefore(itemLista, listaValidaciones.firstChild);
-    }
-</script>
-
-<!-- Estilos específicos para la página de validación de QR -->
-<style>
-    /* Contenedor principal de validación de QR */
-    .validar-qr-container {
-        max-width: 1200px;
-        padding: 30px 20px;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        min-height: 100vh;
-    }
-
-    /* Encabezado de la página */
-    .validar-qr-container h1 {
-        text-align: center;
-        color: #2c3e50;
-        margin-bottom: 10px;
-        font-size: 2.5em;
-    }
-
-    /* Descripción de la página */
-    .descripcion {
-        text-align: center;
-        color: #555;
-        font-size: 1.1em;
-        margin-bottom: 30px;
-    }
-
-    /* Contenedor principal del validador */
-    .qr-validador {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        background: white;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Sección de cámara */
-    .camara-seccion {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    /* Stream de video */
-    .video-stream {
-        width: 100%;
-        border-radius: 10px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-        background: #000;
-    }
-
-    /* Overlay visual con cuadrado de enfoque */
-    .qr-overlay {
-        position: relative;
-        text-align: center;
-        margin-top: -120px;
-        z-index: 1;
-    }
-
-    /* Cuadrado visual para enfoque del QR */
-    .qr-square {
-        width: 200px;
-        height: 200px;
-        border: 3px solid #fff;
-        border-radius: 10px;
-        margin: 0 auto;
-        background: rgba(0, 0, 0, 0.1);
-        box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3),
-                    0 0 20px rgba(52, 211, 153, 0.3);
-    }
-
-    /* Instrucción de alineación */
-    .instruccion {
-        color: #fff;
-        margin-top: 15px;
-        font-weight: bold;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        font-size: 0.95em;
-    }
-
-    /* Contenedor de botones de control */
-    .botones-control {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-    }
-
-    /* Estilos para botones */
-    .btn {
-        padding: 12px 30px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1em;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-danger {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-    }
-
-    .btn-danger:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
-    }
-
-    /* Sección de resultados */
-    .resultados-seccion {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    /* Mensaje de resultado */
-    .resultado-mensaje {
-        animation: slideIn 0.3s ease;
-    }
-
-    /* Animación de entrada */
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Alertas */
-    .alert {
-        padding: 15px 20px;
-        border-radius: 8px;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    .alert-success {
-        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-        color: #2d5016;
-        border-left: 5px solid #22c55e;
-    }
-
-    .alert-danger {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        color: #7c2d12;
-        border-left: 5px solid #ef4444;
-    }
-
-    /* Información del ticket validado */
-    .info-ticket {
-        background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
-        padding: 15px 20px;
-        border-radius: 8px;
-        border-left: 5px solid #0ea5e9;
-        animation: slideIn 0.3s ease;
-    }
-
-    .ticket-datos p {
-        margin: 8px 0;
-        color: #0c4a6e;
-    }
-
-    .ticket-datos strong {
-        color: #0369a1;
-    }
-
-    /* Sección de historial */
-    .historial-validaciones {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
-    }
-
-    .historial-validaciones h3 {
-        color: #2c3e50;
-        margin-bottom: 15px;
-        font-size: 1.2em;
-    }
-
-    /* Lista de validaciones */
-    .lista-validaciones {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        max-height: 300px;
-        overflow-y: auto;
-    }
-
-    /* Elemento de validación */
-    .item-validacion {
-        display: flex;
-        align-items: center;
-        padding: 12px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        font-size: 0.95em;
-        gap: 10px;
-        animation: slideIn 0.3s ease;
-    }
-
-    .item-exito {
-        background: linear-gradient(135deg, #d4edda 0%, #e8f5e9 100%);
-        border-left: 4px solid #22c55e;
-    }
-
-    .item-usado {
-        background: linear-gradient(135deg, #fff3cd 0%, #fdf8e8 100%);
-        border-left: 4px solid #eab308;
-    }
-
-    .item-error {
-        background: linear-gradient(135deg, #f8d7da 0%, #fce4ec 100%);
-        border-left: 4px solid #ef4444;
-    }
-
-    /* ID del ticket */
-    .ticket-id {
-        font-weight: bold;
-        color: #2c3e50;
-        min-width: 50px;
-    }
-
-    /* Nombre del comprador */
-    .comprador {
-        flex: 1;
-        color: #555;
-    }
-
-    /* Hora de validación */
-    .hora {
-        color: #999;
-        font-size: 0.85em;
-    }
-
-    /* Badge de estado */
-    .estado-badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.85em;
-        font-weight: bold;
-        white-space: nowrap;
-    }
-
-    .badge-exito {
-        background: #34d399;
-        color: white;
-    }
-
-    .badge-usado {
-        background: #fbbf24;
-        color: #78350f;
-    }
-
-    .badge-error {
-        background: #f87171;
-        color: white;
-    }
-
-    /* Mensaje cuando no hay validaciones */
-    .sin-validaciones {
-        text-align: center;
-        color: #999;
-        font-style: italic;
-        padding: 20px;
-    }
-
-    /* Responsive para dispositivos móviles */
-    @media (max-width: 768px) {
-        .qr-validador {
-            grid-template-columns: 1fr;
+        /* Grupo de usuario en la derecha */
+        .usuario-header {
+            display: flex;
+            align-items: center;
             gap: 20px;
         }
 
-        .validar-qr-container h1 {
-            font-size: 1.8em;
+        /* Información del usuario actual */
+        .usuario-info {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        .qr-overlay {
-            margin-top: -80px;
+        /* Botón de cerrar sesión */
+        .boton-logout {
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .qr-square {
-            width: 150px;
-            height: 150px;
+        .boton-logout:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
-        .item-validacion {
-            flex-wrap: wrap;
+        /* Contenedor principal con padding para navbar fijo */
+        .contenedor {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 40px 60px 40px;
         }
 
-        .botones-control {
+        /* Encabezado de la página */
+        h1 {
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 700;
+            color: white;
+            font-family: 'Sora', sans-serif;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        /* Descripción debajo del título */
+        .descripcion {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 50px;
+        }
+
+        /* Contenedor del validador con grid de dos columnas */
+        .qr-validador {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        /* Sección de cámara y escaneo */
+        .camara-seccion {
+            display: flex;
             flex-direction: column;
+            gap: 20px;
         }
 
-        .btn {
+        /* Stream de video con bordes redondeados */
+        .video-stream {
             width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            background: #000;
+            aspect-ratio: 4/3;
         }
-    }
-</style>
 
-{% endblock %}
+        /* Overlay visual con cuadrado de enfoque */
+        .qr-overlay {
+            position: relative;
+            text-align: center;
+            margin-top: -90px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Cuadrado visual para alineación del QR */
+        .qr-square {
+            width: 180px;
+            height: 180px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Animación de pulso del cuadrado */
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.2), 0 0 30px rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        /* Instrucción de alineación */
+        .instruccion {
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 12px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* Contenedor de botones de control */
+        .botones-control {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        /* Estilos generales de botones */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        /* Botón primario blanco */
+        .btn-primary {
+            background-color: white;
+            color: #0a0a0a;
+            border: 1px solid white;
+        }
+
+        .btn-primary:hover {
+            background-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Botón secundario (transparente con borde) */
+        .btn-danger {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Sección de resultados */
+        .resultados-seccion {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Mensaje de resultado con animación */
+        .resultado-mensaje {
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Animación de entrada suave */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Card de alerta */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-align: center;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Alerta de éxito (verde) */
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15);
+            color: #86efac;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        /* Alerta de error/advertencia (rojo) */
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Información del ticket validado */
+        .info-ticket {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 16px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Datos del ticket dentro de la info */
+        .ticket-datos p {
+            margin: 6px 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        /* Etiquetas en negrita */
+        .ticket-datos strong {
+            color: #93c5fd;
+            font-weight: 600;
+        }
+
+        /* Sección de historial de validaciones */
+        .historial-validaciones {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Título del historial */
+        .historial-validaciones h3 {
+            color: white;
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Lista de validaciones */
+        .lista-validaciones {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        /* Scroll personalizado para el historial */
+        .lista-validaciones::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .lista-validaciones::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .lista-validaciones::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .lista-validaciones::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Elemento individual de validación */
+        .item-validacion {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Validación exitosa */
+        .item-exito {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        /* Validación ya usada */
+        .item-usado {
+            background: rgba(234, 179, 8, 0.1);
+            border-color: rgba(234, 179, 8, 0.3);
+        }
+
+        /* Validación con error */
+        .item-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* ID del ticket */
+        .ticket-id {
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            min-width: 45px;
+        }
+
+        /* Nombre del comprador */
+        .comprador {
+            flex: 1;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Hora de validación */
+        .hora {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        /* Badge de estado */
+        .estado-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Badge verde para éxito */
+        .badge-exito {
+            background: rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        /* Badge amarillo para ya usado */
+        .badge-usado {
+            background: rgba(234, 179, 8, 0.3);
+            color: #facc15;
+        }
+
+        /* Badge rojo para error */
+        .badge-error {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        /* Mensaje cuando no hay validaciones */
+        .sin-validaciones {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        /* Responsive para tablets y móviles */
+        @media (max-width: 1024px) {
+            .qr-validador {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .contenedor {
+                padding: 120px 30px 60px 30px;
+            }
+
+            h1 {
+                font-size: clamp(28px, 5vw, 40px);
+            }
+        }
+
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .contenedor {
+                padding: 100px 20px 40px 20px;
+            }
+
+            h1 {
+                font-size: clamp(24px, 4vw, 32px);
+            }
+
+            .qr-overlay {
+                margin-top: -70px;
+            }
+
+            .qr-square {
+                width: 150px;
+                height: 150px;
+            }
+
+            .botones-control {
+                flex-direction: column;
+            }
+
+            .btn {
+                flex: unset;
+                width: 100%;
+            }
+
+            .video-stream {
+                aspect-ratio: 16/9;
+            }
+
+            .historial-validaciones {
+                margin-top: 20px;
+            }
+
+            .lista-validaciones {
+                max-height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar con logo Ticket 313 a la izquierda -->
+    <nav class="navbar">
+        <!-- Logo de la aplicación a la izquierda -->
+        <a href="/" class="logo">Ticket 313</a>
+
+        <!-- Información del usuario a la derecha -->
+        {% if session.usuario_id %}
+        <div class="usuario-header">
+            <span class="usuario-info">Hola, <strong>{{ session.usuario_nombre }}</strong></span>
+            <a href="/logout" class="boton-logout">Cerrar Sesión</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Contenedor principal con máximo ancho -->
+    <div class="contenedor">
+        <!-- Encabezado de la página -->
+        <h1>Validar Entradas</h1>
+        <p class="descripcion">Utiliza la cámara de tu dispositivo para escanear los códigos QR</p>
+
+        <!-- Grid con dos columnas: cámara a la izquierda, resultados a la derecha -->
+        <div class="qr-validador">
+            <!-- Sección izquierda: cámara y controles -->
+            <div class="camara-seccion">
+                <!-- Video en tiempo real de la cámara -->
+                <video id="video" class="video-stream" playsinline></video>
+
+                <!-- Overlay visual para indicar zona de escaneo -->
+                <div class="qr-overlay">
+                    <div class="qr-square"></div>
+                    <p class="instruccion">Alinea el código QR dentro del cuadrado</p>
+                </div>
+
+                <!-- Botones para iniciar y detener la cámara -->
+                <div class="botones-control">
+                    <button id="btn-iniciar" class="btn btn-primary" onclick="iniciarEscaneo()">
+                        Iniciar Cámara
+                    </button>
+                    <button id="btn-detener" class="btn btn-danger" onclick="detenerEscaneo()" style="display: none;">
+                        Detener Cámara
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sección derecha: resultados e historial -->
+            <div class="resultados-seccion">
+                <!-- Contenedor para mostrar mensajes de resultado (éxito o error) -->
+                <div id="resultado" class="resultado-mensaje" style="display: none;"></div>
+
+                <!-- Información detallada del ticket validado -->
+                <div id="info-ticket" class="info-ticket" style="display: none;">
+                    <div class="ticket-datos">
+                        <p><strong>Comprador:</strong> <span id="comprador-nombre"></span></p>
+                        <p><strong>Evento:</strong> <span id="evento-nombre"></span></p>
+                    </div>
+                </div>
+
+                <!-- Historial de todas las validaciones en esta sesión -->
+                <div class="historial-validaciones">
+                    <h3>Historial de Validaciones</h3>
+                    <!-- Lista que se llena dinámicamente con JavaScript -->
+                    <ul id="lista-validaciones" class="lista-validaciones">
+                    </ul>
+                    <!-- Mensaje cuando no hay validaciones aún -->
+                    <p id="sin-validaciones" class="sin-validaciones">Aún no hay validaciones en esta sesión</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Importar librería jsQR para escanear códigos QR desde el navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+    <script>
+        // Variables globales para controlar el escaneo de QR
+        let videoElement = null;           // Elemento HTML video para capturar cámara
+        let canvasElement = null;          // Canvas invisible para procesar frames
+        let animationFrameId = null;       // ID de la animación para detenerla
+        let cameraActiva = false;          // Estado actual de la cámara (activa/inactiva)
+        let ultimoQrEscaneado = null;      // Último QR escaneado para evitar procesarlo dos veces
+        let validacionesActuales = [];     // Array con todas las validaciones de esta sesión
+
+        // Inicializar referencias a elementos del DOM cuando carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener referencia al elemento video
+            videoElement = document.getElementById('video');
+            // Crear canvas invisible para procesamiento de imágenes
+            canvasElement = document.createElement('canvas');
+        });
+
+        // Función para iniciar el escaneo activando la cámara
+        function iniciarEscaneo() {
+            // Verificar si el navegador soporta acceso a cámara
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                mostrarError('Tu navegador no soporta acceso a cámara');
+                return;
+            }
+
+            // Solicitar acceso a la cámara (preferir cámara frontal del dispositivo)
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(function(stream) {
+                    // Asignar el stream de video al elemento video
+                    videoElement.srcObject = stream;
+
+                    // Esperar a que el video esté listo para reproducirse
+                    videoElement.onloadedmetadata = function() {
+                        // Iniciar reproducción de video
+                        videoElement.play();
+
+                        // Cambiar visibilidad de botones (mostrar "Detener", ocultar "Iniciar")
+                        document.getElementById('btn-iniciar').style.display = 'none';
+                        document.getElementById('btn-detener').style.display = 'block';
+
+                        // Marcar cámara como activa
+                        cameraActiva = true;
+
+                        // Comenzar bucle de escaneo
+                        escanearQR();
+                    };
+                })
+                .catch(function(error) {
+                    // Si hay error al acceder a cámara, mostrar mensaje
+                    console.error('Error al acceder a cámara:', error);
+                    mostrarError('No se pudo acceder a la cámara. Verifica los permisos.');
+                });
+        }
+
+        // Función para detener el escaneo y cerrar la cámara
+        function detenerEscaneo() {
+            // Detener todos los tracks del stream de video
+            if (videoElement.srcObject) {
+                videoElement.srcObject.getTracks().forEach(track => track.stop());
+            }
+
+            // Cancelar el bucle de animación
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+
+            // Cambiar visibilidad de botones (mostrar "Iniciar", ocultar "Detener")
+            document.getElementById('btn-iniciar').style.display = 'block';
+            document.getElementById('btn-detener').style.display = 'none';
+
+            // Marcar cámara como inactiva
+            cameraActiva = false;
+        }
+
+        // Función para escanear QR continuamente en cada frame de video
+        function escanearQR() {
+            // Si la cámara no está activa, detener el escaneo
+            if (!cameraActiva) {
+                return;
+            }
+
+            // Obtener contexto 2D del canvas para dibujar
+            const canvasContext = canvasElement.getContext('2d');
+
+            // Establecer dimensiones del canvas igual al video
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+
+            // Dibujar el frame actual del video en el canvas
+            canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+            // Obtener datos de píxeles de la imagen
+            const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
+
+            // Usar jsQR para detectar códigos QR en la imagen
+            const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+
+            // Si se detectó un código QR
+            if (qrCode) {
+                // Extraer contenido del QR
+                const datosQR = qrCode.data;
+
+                // Verificar si es diferente al último escaneado (evitar procesamiento duplicado)
+                if (datosQR !== ultimoQrEscaneado) {
+                    // Guardar este QR como el último escaneado
+                    ultimoQrEscaneado = datosQR;
+
+                    // Procesar el código QR detectado
+                    procesarQR(datosQR);
+                }
+            }
+
+            // Solicitar siguiente frame para continuar escaneando
+            animationFrameId = requestAnimationFrame(escanearQR);
+        }
+
+        // Función para procesar el contenido del código QR escaneado
+        function procesarQR(datosQR) {
+            // Extraer ID del ticket del QR
+            // Formato esperado: TICKET_ID:123|EVENTO:nombre|EMAIL:email|FECHA:2025-01-01
+            const matchTicketId = datosQR.match(/TICKET_ID:(\d+)/);
+
+            // Si el formato no es válido, mostrar error
+            if (!matchTicketId) {
+                mostrarError('Código QR no válido para Ticket 313');
+                return;
+            }
+
+            // Obtener el ID del ticket del match
+            const ticketId = matchTicketId[1];
+
+            // Enviar al servidor para validar
+            validarTicketEnServidor(ticketId);
+        }
+
+        // Función para validar el ticket en el servidor
+        function validarTicketEnServidor(ticketId) {
+            // Crear formulario para enviar datos
+            const formData = new FormData();
+            formData.append('ticket_id', ticketId);
+
+            // Enviar solicitud POST al endpoint /validar-qr
+            fetch('/validar-qr', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Procesar respuesta del servidor según estado
+                if (data.estado === 'valido') {
+                    // Entrada válida y aceptada
+                    mostrarExito(data.mensaje, data.comprador, data.evento);
+                    agregarAlHistorial(ticketId, 'valido', data.comprador, data.evento);
+                } else if (data.estado === 'usado') {
+                    // Entrada ya fue utilizada previamente
+                    mostrarYaUsado(data.mensaje);
+                    agregarAlHistorial(ticketId, 'usado', 'Desconocido', 'Desconocido');
+                } else {
+                    // Error: entrada no válida
+                    mostrarError(data.mensaje);
+                    agregarAlHistorial(ticketId, 'error', 'Desconocido', 'Desconocido');
+                }
+            })
+            .catch(error => {
+                // Error de conexión con servidor
+                console.error('Error:', error);
+                mostrarError('Error de conexión con el servidor');
+            });
+        }
+
+        // Función para mostrar mensaje de éxito (verde)
+        function mostrarExito(mensaje, comprador, evento) {
+            // Obtener elemento donde mostrar el resultado
+            const resultadoDiv = document.getElementById('resultado');
+
+            // Crear mensaje con clase alert-success (verde)
+            resultadoDiv.innerHTML = `<div class="alert alert-success">${mensaje}</div>`;
+            resultadoDiv.style.display = 'block';
+
+            // Mostrar información del ticket validado
+            document.getElementById('comprador-nombre').textContent = comprador;
+            document.getElementById('evento-nombre').textContent = evento;
+            document.getElementById('info-ticket').style.display = 'block';
+
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                resultadoDiv.style.display = 'none';
+                document.getElementById('info-ticket').style.display = 'none';
+                // Permitir escanear otro QR
+                ultimoQrEscaneado = null;
+            }, 5000);
+        }
+
+        // Función para mostrar mensaje de entrada ya usada (rojo)
+        function mostrarYaUsado(mensaje) {
+            // Obtener elemento para mostrar resultado
+            const resultadoDiv = document.getElementById('resultado');
+
+            // Crear mensaje con clase alert-danger (rojo)
+            resultadoDiv.innerHTML = `<div class="alert alert-danger">${mensaje}</div>`;
+            resultadoDiv.style.display = 'block';
+
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                resultadoDiv.style.display = 'none';
+                // Permitir reintentar con otro QR
+                ultimoQrEscaneado = null;
+            }, 5000);
+        }
+
+        // Función para mostrar mensaje de error general (rojo)
+        function mostrarError(mensaje) {
+            // Obtener elemento para mostrar resultado
+            const resultadoDiv = document.getElementById('resultado');
+
+            // Crear mensaje con clase alert-danger (rojo)
+            resultadoDiv.innerHTML = `<div class="alert alert-danger">${mensaje}</div>`;
+            resultadoDiv.style.display = 'block';
+
+            // Ocultar mensaje después de 5 segundos
+            setTimeout(() => {
+                resultadoDiv.style.display = 'none';
+                // Permitir reintentar
+                ultimoQrEscaneado = null;
+            }, 5000);
+        }
+
+        // Función para agregar una validación al historial visual
+        function agregarAlHistorial(ticketId, estado, comprador, evento) {
+            // Crear objeto con datos de la validación
+            const validacion = {
+                ticketId: ticketId,
+                estado: estado,
+                comprador: comprador,
+                evento: evento,
+                fecha: new Date().toLocaleTimeString()
+            };
+
+            // Agregar a array de validaciones
+            validacionesActuales.push(validacion);
+
+            // Obtener referencias al DOM
+            const listaValidaciones = document.getElementById('lista-validaciones');
+            const sinValidaciones = document.getElementById('sin-validaciones');
+
+            // Ocultar mensaje de "sin validaciones"
+            sinValidaciones.style.display = 'none';
+
+            // Crear elemento de lista para esta validación
+            const itemLista = document.createElement('li');
+
+            // Asignar clases CSS según el estado
+            if (estado === 'valido') {
+                itemLista.className = 'item-validacion item-exito';
+                itemLista.innerHTML = `
+                    <span class="ticket-id">#${ticketId}</span>
+                    <span class="comprador">${comprador}</span>
+                    <span class="hora">${validacion.fecha}</span>
+                    <span class="estado-badge badge-exito">Validado</span>
+                `;
+            } else if (estado === 'usado') {
+                itemLista.className = 'item-validacion item-usado';
+                itemLista.innerHTML = `
+                    <span class="ticket-id">#${ticketId}</span>
+                    <span class="comprador">Ya usado</span>
+                    <span class="hora">${validacion.fecha}</span>
+                    <span class="estado-badge badge-usado">Ya Usado</span>
+                `;
+            } else {
+                itemLista.className = 'item-validacion item-error';
+                itemLista.innerHTML = `
+                    <span class="ticket-id">#${ticketId}</span>
+                    <span class="comprador">No válido</span>
+                    <span class="hora">${validacion.fecha}</span>
+                    <span class="estado-badge badge-error">Error</span>
+                `;
+            }
+
+            // Insertar en la lista (al inicio para mostrar más recientes primero)
+            listaValidaciones.insertBefore(itemLista, listaValidaciones.firstChild);
+        }
+    </script>
+</body>
+</html>
