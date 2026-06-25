@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ticket 313">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>Eventos - Ticket 313</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .usuario-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .usuario-info {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .boton-logout {
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .boton-logout:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Contenedor principal */
+        .contenedor {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 40px 60px 40px;
+        }
+
+        /* Encabezado */
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 700;
+            color: white;
+            font-family: 'Sora', sans-serif;
+            letter-spacing: -1px;
+        }
+
+        /* Botón crear evento */
+        .boton-crear {
+            padding: 12px 28px;
+            background-color: white;
+            color: #0a0a0a;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 1px solid white;
+        }
+
+        .boton-crear:hover {
+            background-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Grid de eventos */
+        .grid-eventos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+
+        /* Card de evento */
+        .evento-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            backdrop-filter: blur(10px);
+        }
+
+        .evento-card:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Imagen del evento */
+        .evento-imagen {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Contenedor de contenido de la card */
+        .evento-contenido {
+            padding: 24px;
+        }
+
+        .evento-nombre {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .evento-detalle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .evento-etiqueta {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Mensaje sin eventos */
+        .sin-eventos {
+            text-align: center;
+            padding: 80px 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .sin-eventos p {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        /* Mensaje de info */
+        .mensaje-info {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 16px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .mensaje-info a {
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s;
+        }
+
+        .mensaje-info a:hover {
+            border-bottom-color: white;
+        }
+
+        /* Botón regreso */
+        .boton-regreso {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .boton-regreso:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .contenedor {
+                padding: 100px 20px 40px 20px;
+            }
+
+            .encabezado {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .grid-eventos {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Ticket 313</a>
+        {% if session.usuario_id %}
+        <div class="usuario-header">
+            <span class="usuario-info">Hola, <strong>{{ session.usuario_nombre }}</strong></span>
+            <a href="/logout" class="boton-logout">Cerrar Sesión</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="contenedor">
+        <!-- Encabezado con título y botones según rol -->
+        <div class="encabezado">
+            <h1>Eventos</h1>
+            <!-- Mostrar botones solo si el usuario está autenticado y es productor -->
+            {% if session.usuario_id and session.usuario_rol == 'productor' %}
+                <!-- Contenedor de botones para productores -->
+                <div style="display: flex; gap: 12px;">
+                    <!-- Botón para crear evento (solo visible para productores) -->
+                    <a href="/crear-evento" class="boton-crear">+ Crear Evento</a>
+                    <!-- Botón para acceder al panel del productor -->
+                    <a href="/panel-productor" class="boton-crear" style="background-color: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2);">📱 Panel del Productor</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Mensaje si no está autenticado -->
+        {% if not session.usuario_id %}
+        <div class="mensaje-info">
+            Para crear un evento, <a href="/login">inicia sesión</a> o <a href="/registro">crea una cuenta</a>.
+        </div>
+        {% endif %}
+
+        <!-- Grid de eventos -->
+        {% if eventos %}
+        <div class="grid-eventos">
+            <!-- Iterar sobre cada evento -->
+            {% for evento in eventos %}
+            <!-- Card clickeable del evento con imagen -->
+            <a href="/evento/{{ evento[0] }}" class="evento-card">
+                <!-- Imagen del afiche del evento -->
+                {% if evento[5] %}
+                    <!-- Mostrar imagen si existe -->
+                    <img src="{{ evento[5] }}" alt="{{ evento[1] }}" class="evento-imagen">
+                {% else %}
+                    <!-- Mostrar placeholder si no hay imagen -->
+                    <div class="evento-imagen" style="display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 48px;">
+                        🖼️
+                    </div>
+                {% endif %}
+
+                <!-- Contenido de la card (nombre, fecha, precio, capacidad) -->
+                <div class="evento-contenido">
+                    <div class="evento-nombre">{{ evento[1] }}</div>
+                    <div class="evento-detalle">
+                        <span class="evento-etiqueta">Fecha:</span>
+                        <span>{{ evento[2] }}</span>
+                    </div>
+                    <div class="evento-detalle">
+                        <span class="evento-etiqueta">Precio:</span>
+                        <span>${{ evento[3] }}</span>
+                    </div>
+                    <div class="evento-detalle">
+                        <span class="evento-etiqueta">Capacidad:</span>
+                        <span>{{ evento[4] }} personas</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Mensaje cuando no hay eventos -->
+        <div class="sin-eventos">
+            <p>No hay eventos registrados aún</p>
+            {% if session.usuario_id %}
+            <a href="/crear-evento" class="boton-crear">Crear el primer evento</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Botón regreso -->
+        <a href="/" class="boton-regreso">← Volver al Inicio</a>
+    </div>
+
+    <script>
+        // Registrar service worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/service-worker.js').catch(err => {
+                console.log('Error al registrar Service Worker:', err);
+            });
+        }
+    </script>
+</body>
+</html>

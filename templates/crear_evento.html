@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ticket 313">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>Crear Evento - Ticket 313</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            font-family: 'Sora', sans-serif;
+        }
+
+        /* Contenedor */
+        .contenedor {
+            max-width: 700px;
+            margin: 120px auto 60px auto;
+            padding: 0 40px;
+        }
+
+        /* Encabezado */
+        .encabezado {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 700;
+            color: white;
+            font-family: 'Sora', sans-serif;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        .subtitulo {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Card del formulario */
+        .formulario-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Formulario */
+        .formulario {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Grupo del formulario */
+        .grupo-formulario {
+            margin-bottom: 24px;
+        }
+
+        /* Etiqueta */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Input */
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Input file para la imagen */
+        input[type="file"] {
+            padding: 12px 16px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+        }
+
+        input[type="file"]:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Texto de ayuda */
+        small {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 8px;
+            display: block;
+        }
+
+        /* Contenedor de botones */
+        .contenedor-botones {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        /* Botón de cancelar */
+        .boton-cancelar {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .boton-cancelar:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Botón de envío */
+        .boton-enviar {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: white;
+            color: #0a0a0a;
+            border: 1px solid white;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .boton-enviar:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .contenedor {
+                padding: 0 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .formulario-card {
+                padding: 24px;
+            }
+
+            .contenedor-botones {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Ticket 313</a>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="contenedor">
+        <!-- Encabezado -->
+        <div class="encabezado">
+            <h1>Crear Evento</h1>
+            <p class="subtitulo">Completa los detalles para publicar tu evento</p>
+        </div>
+
+        <!-- Card del formulario -->
+        <div class="formulario-card">
+            <!-- Mostrar errores si existen -->
+            {% if error %}
+            <div style="background-color: rgba(255, 107, 107, 0.2); border: 1px solid rgba(255, 107, 107, 0.5); color: #ff6b6b; padding: 12px 16px; border-radius: 4px; margin-bottom: 24px; font-size: 14px;">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <!-- Formulario de crear evento con soporte para archivos -->
+            <form method="POST" class="formulario" enctype="multipart/form-data">
+                <!-- Campo de nombre del evento -->
+                <div class="grupo-formulario">
+                    <label for="nombre">Nombre del Evento</label>
+                    <input type="text" id="nombre" name="nombre" required placeholder="Ej: Concierto Rock 2026">
+                </div>
+
+                <!-- Campo de fecha del evento -->
+                <div class="grupo-formulario">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" name="fecha" required>
+                </div>
+
+                <!-- Campo de precio del evento -->
+                <div class="grupo-formulario">
+                    <label for="precio">Precio (USD)</label>
+                    <input type="number" id="precio" name="precio" required placeholder="50.00" step="0.01" min="0">
+                </div>
+
+                <!-- Campo de capacidad del evento -->
+                <div class="grupo-formulario">
+                    <label for="capacidad">Capacidad</label>
+                    <input type="number" id="capacidad" name="capacidad" required placeholder="500" min="1">
+                </div>
+
+                <!-- Campo de imagen del afiche (OBLIGATORIO) -->
+                <div class="grupo-formulario">
+                    <label for="imagen">🖼️ Afiche del Evento (OBLIGATORIO)</label>
+                    <input type="file" id="imagen" name="imagen" required accept="image/*">
+                    <small>Formatos permitidos: JPG, PNG, GIF, WebP. Tamaño máximo: 50MB</small>
+                </div>
+
+                <!-- Contenedor de botones -->
+                <div class="contenedor-botones">
+                    <!-- Botón para cancelar -->
+                    <a href="/eventos" class="boton-cancelar">Cancelar</a>
+
+                    <!-- Botón para enviar el formulario -->
+                    <button type="submit" class="boton-enviar">Crear Evento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

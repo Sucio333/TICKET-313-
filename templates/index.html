@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ticket 313">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="description" content="Compra y gestiona tus entradas para los mejores eventos">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230a0a0a' width='180' height='180'/><text x='50%' y='50%' font-size='70' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central' font-family='Arial'>T313</text></svg>">
+    <title>Ticket 313 - Venta de Entradas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .usuario-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .usuario-info {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .boton-logout {
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .boton-logout:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #0a0a0a;
+        }
+
+        /* Fondo animado */
+        .fondo-animado {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            opacity: 0.5;
+        }
+
+        .fondo-animado::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            50% {
+                transform: translate(30px, -30px) rotate(180deg);
+            }
+        }
+
+        /* Grid animado */
+        .grid-animado {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05) 76%, transparent 77%, transparent);
+            background-size: 60px 60px;
+            animation: grid-move 10s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 60px 60px;
+            }
+        }
+
+        /* Contenido del hero */
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 1200px;
+            padding: 40px;
+        }
+
+        /* Título principal */
+        .hero-title {
+            font-size: clamp(48px, 12vw, 140px);
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            font-family: 'Sora', sans-serif;
+            letter-spacing: -2px;
+            text-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+            animation: slideUp 1s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Subtítulo */
+        .hero-subtitle {
+            font-size: clamp(16px, 2vw, 24px);
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 50px;
+            animation: slideUp 1s ease-out 0.2s both;
+        }
+
+        /* Botones */
+        .botones-hero {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: slideUp 1s ease-out 0.4s both;
+        }
+
+        .boton-primario {
+            display: inline-block;
+            padding: 14px 40px;
+            background-color: white;
+            color: #0a0a0a;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 1px solid white;
+        }
+
+        .boton-primario:hover {
+            background-color: transparent;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .boton-secundario {
+            display: inline-block;
+            padding: 14px 40px;
+            background-color: transparent;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .boton-secundario:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        .scroll-icon {
+            width: 24px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            padding-top: 8px;
+        }
+
+        .scroll-icon::before {
+            content: '';
+            width: 3px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 2px;
+            animation: scroll 2s infinite;
+        }
+
+        @keyframes scroll {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .hero-content {
+                padding: 20px;
+            }
+
+            .botones-hero {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .boton-primario,
+            .boton-secundario {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Ticket 313</a>
+        {% if session.usuario_id %}
+        <div class="usuario-header">
+            <span class="usuario-info">Hola, <strong>{{ session.usuario_nombre }}</strong></span>
+            <a href="/logout" class="boton-logout">Cerrar Sesión</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <!-- Fondos animados -->
+        <div class="fondo-animado"></div>
+        <div class="grid-animado"></div>
+
+        <!-- Contenido -->
+        <div class="hero-content">
+            <!-- Título principal -->
+            <h1 class="hero-title">Ticket 313</h1>
+
+            <!-- Subtítulo -->
+            <p class="hero-subtitle">Compra y gestiona tus entradas para los mejores eventos</p>
+
+            <!-- Botones de acción -->
+            <div class="botones-hero">
+                <!-- Botón principal para explorar eventos (disponible para todos) -->
+                <a href="/eventos" class="boton-primario">Explorar Eventos</a>
+
+                <!-- Botones según estado de autenticación y rol -->
+                {% if not session.usuario_id %}
+                    <!-- Si no está autenticado, mostrar opciones de login/registro -->
+                    <a href="/login" class="boton-secundario">Iniciar Sesión</a>
+                    <a href="/registro" class="boton-secundario">Crear Cuenta</a>
+                {% else %}
+                    <!-- Si está autenticado, mostrar opciones según su rol -->
+                    {% if session.usuario_rol == 'productor' %}
+                        <!-- Opciones exclusivas para productores -->
+                        <a href="/crear-evento" class="boton-secundario">+ Crear Evento</a>
+                        <a href="/panel-productor" class="boton-secundario">📱 Mi Panel</a>
+                    {% elif session.usuario_rol == 'asistente' %}
+                        <!-- Opciones exclusivas para asistentes -->
+                        <a href="/mis-tickets" class="boton-secundario">🎫 Mis Tickets</a>
+                        <a href="/eventos" class="boton-secundario">🎪 Explorar Eventos</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="scroll-indicator">
+            <div class="scroll-icon"></div>
+        </div>
+    </section>
+
+    <script>
+        // Registrar service worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/static/service-worker.js').then(
+                    function(registration) {
+                        console.log('Service Worker registrado:', registration);
+                    },
+                    function(err) {
+                        console.log('Error al registrar Service Worker:', err);
+                    }
+                );
+            });
+        }
+
+        // Detectar si está instalada como PWA
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Guardar el evento para usarlo después
+            let deferredPrompt = e;
+            console.log('PWA puede ser instalada');
+        });
+
+        // Detectar cuando la app se instala
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA instalada en el dispositivo');
+        });
+    </script>
+</body>
+</html>

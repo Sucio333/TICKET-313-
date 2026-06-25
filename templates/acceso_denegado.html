@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ticket 313">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>Acceso Denegado - Ticket 313</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Contenedor de error */
+        .contenedor-error {
+            background-color: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 60px 40px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Icono de error */
+        .icono-error {
+            font-size: 80px;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        /* Título */
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ff6b6b;
+            margin-bottom: 16px;
+            font-family: 'Sora', sans-serif;
+        }
+
+        /* Subtítulo */
+        .subtitulo {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* Descripción */
+        .descripcion {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        /* Badge de rol actual */
+        .badge-rol {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #93c5fd;
+            margin-bottom: 24px;
+        }
+
+        /* Botones */
+        .botones {
+            display: flex;
+            gap: 12px;
+            flex-direction: column;
+        }
+
+        .boton {
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        /* Botón principal */
+        .boton-primario {
+            background-color: white;
+            color: #0a0a0a;
+            border: 1px solid white;
+        }
+
+        .boton-primario:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        /* Botón secundario */
+        .boton-secundario {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .boton-secundario:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .contenedor-error {
+                padding: 40px 24px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .subtitulo {
+                font-size: 16px;
+            }
+
+            .icono-error {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenedor de error -->
+    <div class="contenedor-error">
+        <!-- Icono de acceso denegado -->
+        <span class="icono-error">🔒</span>
+
+        <!-- Título -->
+        <h1>Acceso Denegado</h1>
+
+        <!-- Subtítulo -->
+        <p class="subtitulo">No tienes permisos para acceder a esta página</p>
+
+        <!-- Badge del rol actual -->
+        <div class="badge-rol">
+            Tu rol: <strong>{{ session.usuario_rol|upper }}</strong>
+        </div>
+
+        <!-- Descripción -->
+        <p class="descripcion">
+            Esta funcionalidad solo está disponible para usuarios con rol de <strong>Productor</strong>.
+            Los productores pueden crear eventos y validar entradas.
+        </p>
+
+        <!-- Botones de acción -->
+        <div class="botones">
+            <!-- Botón para volver a eventos -->
+            <a href="/eventos" class="boton boton-primario">
+                ← Volver a Eventos
+            </a>
+
+            <!-- Botón para ir a inicio -->
+            <a href="/" class="boton boton-secundario">
+                🏠 Ir al Inicio
+            </a>
+        </div>
+    </div>
+</body>
+</html>

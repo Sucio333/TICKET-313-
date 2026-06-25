@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ticket 313">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>Detalle del Evento - Ticket 313</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .usuario-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .usuario-info {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .boton-logout {
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .boton-logout:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Contenedor principal */
+        .contenedor {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 120px 40px 60px 40px;
+        }
+
+        /* Botón de regreso */
+        .boton-regreso {
+            display: inline-block;
+            padding: 8px 12px;
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-bottom: 40px;
+        }
+
+        .boton-regreso:hover {
+            color: white;
+        }
+
+        /* Mensaje de confirmación */
+        .mensaje-confirmacion {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #86efac;
+            padding: 16px 20px;
+            border-radius: 4px;
+            margin-bottom: 32px;
+            border-left: 4px solid #22c55e;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .mensaje-confirmacion h3 {
+            margin-bottom: 8px;
+        }
+
+        /* Info del evento */
+        .info-evento {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 48px);
+            font-weight: 700;
+            color: white;
+            font-family: 'Sora', sans-serif;
+            letter-spacing: -1px;
+            margin-bottom: 32px;
+        }
+
+        /* Grid de detalles */
+        .grid-detalles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .detalle-item {
+            padding-bottom: 16px;
+        }
+
+        .detalle-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .detalle-valor {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+        }
+
+        /* Sección de compra */
+        .seccion-compra {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            font-family: 'Sora', sans-serif;
+            margin-bottom: 24px;
+        }
+
+        /* Formulario */
+        .formulario {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Grupo del formulario */
+        .grupo-formulario {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Contenedor de botones */
+        .contenedor-botones {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .boton-cancelar {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .boton-cancelar:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .boton-compra {
+            flex: 1;
+            padding: 12px 24px;
+            background-color: white;
+            color: #0a0a0a;
+            border: 1px solid white;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .boton-compra:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        /* Mensaje para no autenticados */
+        .mensaje-autenticacion {
+            background-color: rgba(59, 130, 246, 0.1);
+            padding: 24px;
+            border-radius: 4px;
+            border-left: 4px solid #3b82f6;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .mensaje-autenticacion p {
+            color: rgba(147, 197, 253, 0.9);
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .botones-autenticacion {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .boton-login,
+        .boton-registro {
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .boton-login {
+            background-color: white;
+            color: #0a0a0a;
+            border: 1px solid white;
+        }
+
+        .boton-login:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .boton-registro {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .boton-registro:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .contenedor {
+                padding: 100px 20px 40px 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .info-evento,
+            .seccion-compra {
+                padding: 24px;
+            }
+
+            .grid-detalles {
+                grid-template-columns: 1fr;
+            }
+
+            .contenedor-botones {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Ticket 313</a>
+        {% if session.usuario_id %}
+        <div class="usuario-header">
+            <span class="usuario-info">Hola, <strong>{{ session.usuario_nombre }}</strong></span>
+            <a href="/logout" class="boton-logout">Cerrar Sesión</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="contenedor">
+        <!-- Botón de regreso -->
+        <a href="/eventos" class="boton-regreso">← Volver a Eventos</a>
+
+        <!-- Mensaje de confirmación si la compra fue exitosa -->
+        {% if compra_exitosa %}
+        <div class="mensaje-confirmacion">
+            <h3>¡Compra Exitosa!</h3>
+            <p>Tu ticket ha sido comprado exitosamente. Revisa tu correo para más información.</p>
+        </div>
+        {% endif %}
+
+        <!-- Información del evento -->
+        <div class="info-evento">
+            <h1>{{ evento[1] }}</h1>
+
+            <!-- Grid con detalles -->
+            <div class="grid-detalles">
+                <div class="detalle-item">
+                    <div class="detalle-label">Fecha</div>
+                    <div class="detalle-valor">{{ evento[2] }}</div>
+                </div>
+
+                <div class="detalle-item">
+                    <div class="detalle-label">Precio</div>
+                    <div class="detalle-valor">${{ evento[3] }}</div>
+                </div>
+
+                <div class="detalle-item">
+                    <div class="detalle-label">Capacidad</div>
+                    <div class="detalle-valor">{{ evento[4] }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de compra -->
+        <div class="seccion-compra">
+            <h2>Comprar Tickets</h2>
+
+            <!-- Si está autenticado, mostrar formulario -->
+            {% if session.usuario_id %}
+            <form method="POST" class="formulario">
+                <div class="grupo-formulario">
+                    <label for="nombre_comprador">Nombre Completo</label>
+                    <input type="text" id="nombre_comprador" name="nombre_comprador" required placeholder="Tu nombre">
+                </div>
+
+                <div class="grupo-formulario">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" required placeholder="tu@ejemplo.com">
+                </div>
+
+                <div class="grupo-formulario">
+                    <label for="cantidad">Cantidad de Tickets</label>
+                    <input type="number" id="cantidad" name="cantidad" required placeholder="Cantidad" min="1" max="10">
+                </div>
+
+                <div class="contenedor-botones">
+                    <a href="/eventos" class="boton-cancelar">Cancelar</a>
+                    <button type="submit" class="boton-compra">Comprar Tickets</button>
+                </div>
+            </form>
+            {% else %}
+            <!-- Si no está autenticado, mostrar mensaje -->
+            <div class="mensaje-autenticacion">
+                <p>Para comprar tickets, necesitas iniciar sesión o crear una cuenta.</p>
+                <div class="botones-autenticacion">
+                    <a href="/login" class="boton-login">Iniciar Sesión</a>
+                    <a href="/registro" class="boton-registro">Crear Cuenta</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

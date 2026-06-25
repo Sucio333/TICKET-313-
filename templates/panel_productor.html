@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ticket 313">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>Panel Productor - Ticket 313</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .usuario-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .usuario-info {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .boton-logout {
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .boton-logout:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .contenedor {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 40px 60px 40px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .subtitulo {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 50px 0 20px 0;
+            font-family: 'Sora', sans-serif;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+        }
+
+        /* Cards de estadísticas */
+        .estadisticas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .card-stat {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-valor {
+            font-size: 36px;
+            font-weight: 700;
+            color: #4ade80;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .stat-detalle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 8px;
+        }
+
+        /* Tabla */
+        .tabla-contenedor {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .evento-nombre {
+            font-weight: 600;
+            color: white;
+        }
+
+        .precio-positivo {
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .boton-regreso {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+            margin-top: 30px;
+        }
+
+        .boton-regreso:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .contenedor {
+                padding: 100px 20px 40px 20px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .estadisticas {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 12px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Ticket 313</a>
+        {% if session.usuario_id %}
+        <div class="usuario-header">
+            <span class="usuario-info">Panel Productor - {{ session.usuario_nombre }}</span>
+            <a href="/logout" class="boton-logout">Cerrar Sesión</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Contenedor -->
+    <div class="contenedor">
+        <!-- Encabezado -->
+        <h1>📊 Panel de Productor</h1>
+        <p class="subtitulo">Análisis de ventas y estadísticas de tus eventos</p>
+
+        <!-- ===== ESTADÍSTICAS GENERALES ===== -->
+        <h2>Estadísticas Generales</h2>
+        <div class="estadisticas">
+            <!-- Total de ingresos -->
+            <div class="card-stat">
+                <div class="stat-label">Ingresos Totales</div>
+                <div class="stat-valor">${{ "%.2f"|format(ingresos_totales) }}</div>
+                <div class="stat-detalle">De todos tus eventos</div>
+            </div>
+
+            <!-- Total de tickets vendidos -->
+            <div class="card-stat">
+                <div class="stat-label">Tickets Vendidos</div>
+                <div class="stat-valor">{{ cantidad_tickets_total }}</div>
+                <div class="stat-detalle">Entradas totales</div>
+            </div>
+
+            <!-- Cantidad de eventos -->
+            <div class="card-stat">
+                <div class="stat-label">Eventos Publicados</div>
+                <div class="stat-valor">{{ ventas_por_evento|length }}</div>
+                {% if ventas_por_evento|length > 0 %}
+                <div class="stat-detalle">Promedio: ${{ "%.2f"|format(ingresos_totales / ventas_por_evento|length) }}</div>
+                {% else %}
+                <div class="stat-detalle">Sin eventos aún</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ===== VENTAS POR EVENTO ===== -->
+        <h2>Ventas por Evento</h2>
+        {% if ventas_por_evento %}
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Evento</th>
+                        <th>Fecha</th>
+                        <th>Capacidad</th>
+                        <th>Vendidas</th>
+                        <th>Precio Unit.</th>
+                        <th>Ingresos Totales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Iterar sobre cada evento y sus ventas -->
+                    {% for evento in ventas_por_evento %}
+                    <tr>
+                        <!-- Nombre del evento -->
+                        <td class="evento-nombre">{{ evento[1] }}</td>
+                        <!-- Fecha del evento -->
+                        <td>{{ evento[2] }}</td>
+                        <!-- Capacidad total -->
+                        <td>{{ evento[4] }} personas</td>
+                        <!-- Cantidad vendida (puede ser NULL) -->
+                        <td>{{ evento[6] if evento[6] else 0 }}</td>
+                        <!-- Precio unitario -->
+                        <td class="precio-positivo">${{ "%.2f"|format(evento[3]) }}</td>
+                        <!-- Ingresos totales del evento -->
+                        <td class="precio-positivo"><strong>${{ "%.2f"|format(evento[7] if evento[7] else 0) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: rgba(255, 255, 255, 0.5); text-align: center; padding: 40px;">Sin eventos aún. <a href="/crear-evento" style="color: white;">Crear primer evento</a></p>
+        {% endif %}
+
+        <!-- ===== HISTORIAL DE COMPRAS ===== -->
+        <h2>Historial de Compras (Cartola)</h2>
+        {% if historial_tickets %}
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#Ticket</th>
+                        <th>Evento</th>
+                        <th>Comprador</th>
+                        <th>Email</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unit.</th>
+                        <th>Total Pagado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Iterar sobre historial completo de compras -->
+                    {% for ticket in historial_tickets %}
+                    <tr>
+                        <!-- Número de ticket -->
+                        <td>#{{ ticket[0] }}</td>
+                        <!-- Nombre del evento -->
+                        <td class="evento-nombre">{{ ticket[1] }}</td>
+                        <!-- Nombre del comprador -->
+                        <td>{{ ticket[2] }}</td>
+                        <!-- Email del comprador -->
+                        <td style="font-size: 12px;">{{ ticket[3] }}</td>
+                        <!-- Cantidad comprada -->
+                        <td>{{ ticket[4] }}</td>
+                        <!-- Precio unitario -->
+                        <td>${{ "%.2f"|format(ticket[5]) }}</td>
+                        <!-- Total pagado por esta compra -->
+                        <td class="precio-positivo"><strong>${{ "%.2f"|format(ticket[6]) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: rgba(255, 255, 255, 0.5); text-align: center; padding: 40px;">Sin compras aún. Cuando tengas eventos, aparecerán aquí las ventas.</p>
+        {% endif %}
+
+        <!-- Botón regreso -->
+        <a href="/eventos" class="boton-regreso">← Volver a Eventos</a>
+    </div>
+
+    <script>
+        // Registrar service worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/service-worker.js').catch(err => {
+                console.log('Error al registrar Service Worker:', err);
+            });
+        }
+    </script>
+</body>
+</html>

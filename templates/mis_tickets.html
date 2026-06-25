@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ticket 313">
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>Mis Tickets - Ticket 313</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: white;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .usuario-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .usuario-info {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .boton-logout {
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .boton-logout:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Contenedor */
+        .contenedor {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 40px 60px 40px;
+        }
+
+        h1 {
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 700;
+            color: white;
+            font-family: 'Sora', sans-serif;
+            letter-spacing: -1px;
+            margin-bottom: 40px;
+        }
+
+        /* Tabla de tickets */
+        .tabla-contenedor {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background-color 0.3s;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Información del evento */
+        .evento-nombre {
+            font-weight: 600;
+            color: white;
+        }
+
+        .evento-fecha {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+        }
+
+        /* Precios */
+        .precio {
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        /* Cantidad */
+        .cantidad {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            padding: 4px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        /* Mensaje vacío */
+        .sin-tickets {
+            text-align: center;
+            padding: 80px 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .sin-tickets p {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .boton-explorar {
+            display: inline-block;
+            padding: 12px 28px;
+            background-color: white;
+            color: #0a0a0a;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .boton-explorar:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        /* Botón regreso */
+        .boton-regreso {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 30px;
+        }
+
+        .boton-regreso:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Resumen */
+        .resumen-tickets {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .resumen-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .resumen-valor {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4ade80;
+            margin-top: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 20px;
+            }
+
+            .contenedor {
+                padding: 100px 20px 40px 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+                margin-bottom: 30px;
+            }
+
+            /* Tabla responsiva */
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 12px 10px;
+            }
+
+            .resumen-tickets {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Ticket 313</a>
+        {% if session.usuario_id %}
+        <div class="usuario-header">
+            <span class="usuario-info">Hola, <strong>{{ session.usuario_nombre }}</strong></span>
+            <a href="/logout" class="boton-logout">Cerrar Sesión</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="contenedor">
+        <!-- Encabezado -->
+        <h1>Mis Tickets</h1>
+
+        <!-- Mostrar tickets si existen -->
+        {% if compras %}
+        <!-- Tabla con historial de compras -->
+        <div class="tabla-contenedor">
+            <table>
+                <!-- Encabezado de tabla -->
+                <thead>
+                    <tr>
+                        <th>Evento</th>
+                        <th>Fecha</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Total Pagado</th>
+                    </tr>
+                </thead>
+
+                <!-- Cuerpo de tabla con compras -->
+                <tbody>
+                    <!-- Iterar sobre cada compra -->
+                    {% for compra in compras %}
+                    <tr>
+                        <!-- Nombre del evento -->
+                        <td>
+                            <a href="/evento/{{ compra[0] }}" style="color: white; text-decoration: none;">
+                                <div class="evento-nombre">{{ compra[1] }}</div>
+                            </a>
+                        </td>
+
+                        <!-- Fecha del evento -->
+                        <td>
+                            <div class="evento-fecha">{{ compra[2] }}</div>
+                        </td>
+
+                        <!-- Cantidad de tickets comprados -->
+                        <td>
+                            <span class="cantidad">{{ compra[4] }} entrada{% if compra[4] != 1 %}s{% endif %}</span>
+                        </td>
+
+                        <!-- Precio unitario del ticket -->
+                        <td class="precio">${{ "%.2f"|format(compra[3]) }}</td>
+
+                        <!-- Precio total pagado (precio * cantidad) -->
+                        <td class="precio"><strong>${{ "%.2f"|format(compra[3] * compra[4]) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resumen de gasto total (calculado en app.py) -->
+        <div class="resumen-tickets">
+            <div class="resumen-label">Gasto Total en Entradas</div>
+            <!-- Mostrar el gasto total que viene de app.py -->
+            <div class="resumen-valor">${{ "%.2f"|format(gasto_total) }}</div>
+        </div>
+
+        <!-- Botón para volver -->
+        <a href="/eventos" class="boton-regreso">← Volver a Eventos</a>
+
+        {% else %}
+        <!-- Mensaje cuando no hay tickets comprados -->
+        <div class="sin-tickets">
+            <p>Aún no has comprado ningún ticket 🎫</p>
+            <p style="color: rgba(255, 255, 255, 0.4); font-size: 14px; margin-bottom: 20px;">
+                Explora nuestros eventos y compra tu primera entrada
+            </p>
+            <a href="/eventos" class="boton-explorar">Explorar Eventos</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Registrar service worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/service-worker.js').catch(err => {
+                console.log('Error al registrar Service Worker:', err);
+            });
+        }
+    </script>
+</body>
+</html>
